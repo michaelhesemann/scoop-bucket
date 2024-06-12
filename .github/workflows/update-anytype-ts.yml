@@ -8,7 +8,10 @@ on:
 jobs:
   update:
     runs-on: ubuntu-latest
-    
+
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -46,13 +49,6 @@ jobs:
           checksum=$(sha256sum anytype-ts.zip | cut -d ' ' -f 1)
           sed -i "s/CHECKSUM_PLACEHOLDER/${checksum}/" anytype-ts.json
 
-      - name: Commit changes
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git
-          git add bucket/anytype-ts.json
-          git commit -m "Update anytype-ts to version ${{ steps.get_latest_release.outputs.tag }}"
-          git push origin main
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Update json
