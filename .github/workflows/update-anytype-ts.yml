@@ -8,7 +8,7 @@ on:
 jobs:
   update:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -47,9 +47,11 @@ jobs:
           sed -i "s/CHECKSUM_PLACEHOLDER/${checksum}/" anytype-ts.json
 
       - name: Commit changes
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add bucket/anytype-ts.json
           git commit -m "Update anytype-ts to version ${{ steps.get_latest_release.outputs.tag }}"
-          git push
+          git push https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}.git HEAD:main
