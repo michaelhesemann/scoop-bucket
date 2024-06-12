@@ -31,7 +31,7 @@ jobs:
         run: |
           cd bucket
           latest_version=${{ steps.get_latest_release.outputs.tag }}
-          url="https://github.com/anyproto/anytype-ts/releases/download/${latest_version}/anytype-ts-windows-${latest_version}.zip"
+          url="https://github.com/anyproto/anytype-ts/releases/download/${latest_version}/Anytype.Setup.${latest_version}.exe"
           cat > anytype-ts.json <<EOL
           {
             "version": "${latest_version}",
@@ -44,7 +44,7 @@ jobs:
         id: get_checksum
         run: |
           cd bucket
-          url="https://github.com/anyproto/anytype-ts/releases/download/${{ steps.get_latest_release.outputs.tag }}/anytype-ts-windows-${{ steps.get_latest_release.outputs.tag }}.zip"
+          url="https://github.com/anyproto/anytype-ts/releases/download/${{ steps.get_latest_release.outputs.tag }}/Anytype.Setup.${{ steps.get_latest_release.outputs.tag }}.exe"
           curl -L -o anytype-ts.zip ${url}
           checksum=$(sha256sum anytype-ts.zip | cut -d ' ' -f 1)
           sed -i "s/CHECKSUM_PLACEHOLDER/${checksum}/" anytype-ts.json
