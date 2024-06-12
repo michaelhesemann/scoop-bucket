@@ -25,8 +25,8 @@ jobs:
         run: |
           cd bucket
           latest_version=$(curl --silent "https://api.github.com/repos/anyproto/anytype-ts/releases/latest" | jq -r .tag_name)
-          url="$(curl --silent "https://api.github.com/repos/anyproto/anytype-ts/releases/latest" | jq '.assets[] | select (.name | test("\\.exe$"))' | jq '.browser_download_url')"
-          curl -L -o anytype-ts.exe ${url}
+          url=$(curl --silent "https://api.github.com/repos/anyproto/anytype-ts/releases/latest" | jq -r '.assets[] | select(.name | endswith(".exe")) | .browser_download_url')
+          curl -L -o anytype-ts.exe "$url"
           checksum=$(sha256sum anytype-ts.exe | cut -d ' ' -f 1)
           cat > anytype-ts.json <<EOL
           {
