@@ -31,8 +31,23 @@ jobs:
           cat > anytype-ts.json <<EOL
           {
             "version": "${latest_version}",
-            "url": "${url}",
-            "hash": "${checksum}"
+            "architecture": {
+              "64bit": {
+                  "url": "${url}",
+                  "hash": "d8ce393fafe2e3397499b605fb078d8f3d5ff8d7886a944ac61dd41d9c058adb",
+                  "pre_install": [
+                      "Expand-7zipArchive \"$dir\\`$PLUGINSDIR\\app*.7z\" \"$dir\"",
+                      "Remove-Item \"$dir\\`$R0\", \"$dir\\`$PLUGINSDIR\" -Force -Recurse"
+                  ]
+              }
+            },
+            "bin": "Anytype.exe",
+            "shortcuts": [
+              [
+                  "Anytype.exe",
+                  "Anytype"
+              ]
+            ]
           }
           EOL
 
