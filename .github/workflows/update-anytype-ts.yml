@@ -1,0 +1,55 @@
+name: Update Anytype-ts
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs every day at midnight
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Get latest release tag
+        id: get_latest_release
+        run: |
+          latest_tag=$(curl --silent "https://api.github.com/repos/anyproto/anytype-ts/releases/latest" | jq -r .tag_name)
+          echo "::set-output name=tag::${latest_tag}"
+
+      - name: Update scoop manifest
+        run: |
+          cd bucket
+          latest_version=${{ steps.get_latest_release.outputs.tag }}
+          url="https://github.com/anyproto/anytype-ts/releases/download/${latest_version}/anytype-ts-windows-${latest_version}.zip"
+          cat > anytype-ts.json <<EOL
+          {
+            "version": "${latest_version}",
+            "url": "${url}",
+            "hash": "CHECKSUM_PLACEHOLDER"
+          }
+          EOL
+
+      - name: Get file checksum
+        id: get_checksum
+        run: |
+          cd bucket
+          url="https://github.com/anyproto/anytype-ts/releases/download/${{ steps.get_latest_release.outputs.tag }}/anytype-ts-windows-${{ steps.get_latest_release.outputs.tag }}.zip"
+          curl -L -o anytype-ts.zip ${url}
+          checksum=$(sha256sum anytype-ts.zip | cut -d ' ' -f 1)
+          sed -i "s/CHECKSUM_PLACEHOLDER/${checksum}/" anytype-ts.json
+
+      - name: Commit changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add bucket/anytype-ts.json
+          git commit -m "Update anytype-ts to version ${{ steps.get_latest_release.outputs.tag }}"
+          git push
