@@ -21,33 +21,20 @@ jobs:
         with:
           node-version: '14'
 
-      - name: Get latest release tag
-        id: get_latest_release
-        run: |
-          latest_tag=$(curl --silent "https://api.github.com/repos/anyproto/anytype-ts/releases/latest" | jq -r .tag_name)
-          echo "::set-output name=tag::${latest_tag}"
-
       - name: Update scoop manifest
         run: |
           cd bucket
           latest_version=${{ steps.get_latest_release.outputs.tag }}
           url=$(curl --silent "https://api.github.com/repos/anyproto/anytype-ts/releases/latest" | jq '.assets[] | select (.name | test("\\.exe$"))' | jq '.browser_download_url')
+          curl -L -o anytype-ts.exe ${url}
+          checksum=$(sha256sum anytype-ts.exe | cut -d ' ' -f 1)
           cat > anytype-ts.json <<EOL
           {
             "version": "${latest_version}",
             "url": "${url}",
-            "hash": "CHECKSUM_PLACEHOLDER"
+            "hash": "${checksum}"
           }
           EOL
-
-      - name: Get file checksum
-        id: get_checksum
-        run: |
-          cd bucket
-          url=$(curl --silent "https://api.github.com/repos/anyproto/anytype-ts/releases/latest" | jq '.assets[] | select (.name | test("\\.exe$"))' | jq '.browser_download_url')
-          curl -L -o anytype-ts.exe ${url}
-          checksum=$(sha256sum anytype-ts.exe | cut -d ' ' -f 1)
-          sed -i "s/CHECKSUM_PLACEHOLDER/${checksum}/" anytype-ts.json
 
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
