@@ -10,7 +10,7 @@
         ]
     }
   },
-  "bin": "Anytype.Setup.0.41.0.exe",
+  "bin": "Anytype.exe",
   "shortcuts": [
     [
         "Anytype.exe",
